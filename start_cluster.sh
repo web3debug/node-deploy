@@ -31,13 +31,13 @@ gov_ips_comma="172.22.42.110,172.22.42.235,172.22.43.182"
 component=$1
 if [[ "${component}"x == "devnet"x ]]; then
     ips=(${devnet_ips})
-    bash +x ./setup_bsc_node.sh native_init "${devnet_ips}"
+    bash +x ./setup_bsc_node.sh native_init "${devnet_ips_comma}"
 elif [[ "${component}"x == "staking"x ]]; then
     ips=(${staking_ips})
-    bash +x ./setup_bsc_node.sh native_init "${staking_ips}"
+    bash +x ./setup_bsc_node.sh native_init "${staking_ips_comma}"
 elif [[ "${component}"x == "gov"x ]]; then
     ips=(${gov_ips})
-    bash +x ./setup_bsc_node.sh native_init "${gov_ips}"
+    bash +x ./setup_bsc_node.sh native_init "${gov_ips_comma}"
 else
     echo "no process "
     exit
