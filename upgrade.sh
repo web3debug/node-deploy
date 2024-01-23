@@ -37,9 +37,9 @@ else
 fi
 
 cp /server/roshan/node-deploy/start_geth.sh /mnt/efs/bsc-qa/bc-fusion/clusterNetwork/.
+echo y | cp /server/roshan/node-deploy/bin/geth /mnt/efs/bsc-qa/bc-fusion/clusterNetwork/geth
 
 for ((i = 0; i < ${#ips[@]}; i++)); do
-    echo y | cp /server/roshan/node-deploy/bin/geth /mnt/efs/bsc-qa/bc-fusion/clusterNetwork/geth
     dst_id=${ips2ids[${ips[i]}]}
     aws ssm send-command \
         --instance-ids "${dst_id}" \
@@ -48,6 +48,6 @@ for ((i = 0; i < ${#ips[@]}; i++)); do
     aws ssm send-command \
         --instance-ids "${dst_id}" \
         --document-name "AWS-RunShellScript" \
-        --parameters commands="echo y | sudo cp /mnt/efs/bsc-qa/bc-fusion/clusterNetwork/geth /server/clusterNetwork/node${i}/geth${i} && sudo chmod +x /server/clusterNetwork/node${i}/geth${i} && sudo bash /server/clusterNetwork/start_geth.sh ${i}"
+        --parameters commands="echo y | sudo cp /mnt/efs/bsc-qa/bc-fusion/clusterNetwork/geth /server/clusterNetwork/node${i}/geth${i}&& sudo bash /server/clusterNetwork/start_geth.sh ${i}"
 
 done
