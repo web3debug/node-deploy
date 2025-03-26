@@ -20,7 +20,7 @@ sleepBeforeStart=10
 # stop geth client
 function exit_previous() {
     ValIdx=$1
-    ps -ef  | grep geth$ValIdx | grep mine |awk '{print $2}' | xargs kill
+    ps -ef  | grep geth$ValIdx | grep mine |awk '{print $2}' | xargs -r kill
     sleep ${sleepBeforeStart}
 }
 
