@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -22,6 +23,10 @@ var account, _ = fromHexKey("59ba8068eb256d520179e903f43dacf6d8d57d72bd306e1bd60
 var toAddr = common.HexToAddress("0x04d63aBCd2b9b1baa327f2Dda0f873F197ccd186")
 
 func main() {
+	args := os.Args
+	if len(args) > 0 {
+		toAddr = common.HexToAddress(args[0])
+	}
 	c, _ := ethclient.Dial(edpoint)
 	t := time.NewTicker(200 * time.Millisecond)
 	for {
