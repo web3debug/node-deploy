@@ -1,34 +1,36 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2086
 
 # Exit script on error
 set -e
 
-basedir=$(
-    cd $(dirname $0)
-    pwd
-)
+basedir=$(cd $(dirname $0) && pwd)
 workspace=${basedir}
 source ${workspace}/.env
-size=$((BSC_CLUSTER_SIZE))
-stateScheme="hash"
-dbEngine="leveldb"
-gcmode="full"
-epoch=200
-blockInterval=3
-sleepBeforeStart=10
+
+GENESIS_COMMIT="7c97e5f94f728107de36e6de3f3ac39a9bde2837" # pascal commit
+INIT_HOLDER=$PROTECTOR
+size=${VALIDATOR_SIZE:-1}
+blockInterval=${BLOCK_INTERVAL:-3}
+sleepBeforeStart=5
 
 # stop geth client
 function exit_previous() {
     ValIdx=$1
-    ps -ef  | grep geth$ValIdx | grep mine |awk '{print $2}' | xargs kill
+    ps -ef | grep geth$ValIdx | grep mine | awk '{print $2}' | xargs -r kill
     sleep ${sleepBeforeStart}
 }
 
-function create_validator() {
-    rm -rf ${workspace}/.local
-    mkdir -p ${workspace}/.local/bsc
+function create_validator_keys() {
+    rm -rf ${workspace}/.local ${workspace}/keys
+    mkdir -p ${workspace}/.local/bsc ${workspace}/keys
+    echo "$KEYPASS" >${workspace}/keys/password.txt
 
     for ((i = 0; i < size; i++)); do
+        ${workspace}/bin/geth account new --password ${workspace}/keys/password.txt --datadir ${workspace}/keys/validator${i}
+        ${workspace}/bin/geth bls wallet create --blspassword ${workspace}/keys/password.txt --datadir ${workspace}/keys/bls${i}
+        ${workspace}/bin/geth bls account new --blspassword ${workspace}/keys/password.txt --datadir ${workspace}/keys/bls${i}
+        ${workspace}/bin/bootnode -genkey ${workspace}/keys/nodekey${i}
         cp -r ${workspace}/keys/validator${i} ${workspace}/.local/bsc/
         cp -r ${workspace}/keys/bls${i} ${workspace}/.local/bsc/
     done
@@ -37,17 +39,20 @@ function create_validator() {
 # reset genesis, but keep edited genesis-template.json
 function reset_genesis() {
     if [ ! -f "${workspace}/genesis/genesis-template.json" ]; then
-        cd ${workspace} &&  git submodule update --init --recursive && cd ${workspace}/genesis
+        cd ${workspace} && git submodule update --init --recursive && cd ${workspace}/genesis
         git reset --hard ${GENESIS_COMMIT}
     else
         cd ${workspace}/genesis
         cp genesis-template.json genesis-template.json.bk
-        git stash
+        git stash && git stash clear
+        if [ -n "$(git status --porcelain | grep -v genesis-template.json.bk)" ]; then
+            echo "genesis has been modified" && exit 1
+        fi
         cd ${workspace} && git submodule update --remote --recursive && cd ${workspace}/genesis
         git reset --hard ${GENESIS_COMMIT}
         mv genesis-template.json.bk genesis-template.json
     fi
-    
+
     poetry install --no-root
     npm install
     rm -rf lib/forge-std
@@ -61,9 +66,7 @@ function reset_genesis() {
 function prepare_config() {
     rm -f ${workspace}/genesis/validators.conf
 
-    passedHardforkTime=$(expr $(date +%s) + ${PASSED_FORK_DELAY})
-    echo "passedHardforkTime "${passedHardforkTime} > ${workspace}/.local/bsc/hardforkTime.txt
-    initHolders=${INIT_HOLDER}
+    initHolders=${INIT_HOLDERS}
     for ((i = 0; i < size; i++)); do
         for f in ${workspace}/.local/bsc/validator${i}/keystore/*; do
             cons_addr="0x$(cat ${f} | jq -r .address)"
@@ -73,134 +76,171 @@ function prepare_config() {
 
         mkdir -p ${workspace}/.local/bsc/node${i}
         cp ${workspace}/keys/password.txt ${workspace}/.local/bsc/node${i}/
-        cp ${workspace}/.local/bsc/hardforkTime.txt ${workspace}/.local/bsc/node${i}/
         bbcfee_addrs=${fee_addr}
         powers="0x000001d1a94a2000" #2000000000000
         mv ${workspace}/.local/bsc/bls${i}/bls ${workspace}/.local/bsc/node${i}/ && rm -rf ${workspace}/.local/bsc/bls${i}
         vote_addr=0x$(cat ${workspace}/.local/bsc/node${i}/bls/keystore/*json | jq .pubkey | sed 's/"//g')
-        echo "${cons_addr},${bbcfee_addrs},${fee_addr},${powers},${vote_addr}" >> ${workspace}/genesis/validators.conf
+        echo "${cons_addr},${bbcfee_addrs},${fee_addr},${powers},${vote_addr}" >>${workspace}/genesis/validators.conf
         echo "validator" ${i} ":" ${cons_addr}
         echo "validatorFee" ${i} ":" ${fee_addr}
         echo "validatorVote" ${i} ":" ${vote_addr}
     done
-    rm -f ${workspace}/.local/bsc/hardforkTime.txt
 
     cd ${workspace}/genesis/
     git checkout HEAD contracts
 
     sed -i -e '/registeredContractChannelMap\[VALIDATOR_CONTRACT_ADDR\]\[STAKING_CHANNELID\]/d' ${workspace}/genesis/contracts/deprecated/CrossChain.sol
-    sed -i -e  's/alreadyInit = true;/turnLength = 4;alreadyInit = true;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
-    sed -i -e  's/public onlyCoinbase onlyZeroGasPrice {/public onlyCoinbase onlyZeroGasPrice {if (block.number < 30) return;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
-    
+    sed -i -e 's/alreadyInit = true;/turnLength = 4;alreadyInit = true;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
+    sed -i -e 's/public onlyCoinbase onlyZeroGasPrice {/public onlyCoinbase onlyZeroGasPrice {if (block.number < 30) return;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
+
     poetry run python -m scripts.generate generate-validators
-    poetry run python -m scripts.generate generate-init-holders "${initHolders}"
+    poetry run python -m scripts.generate generate-init-holders "${initHolders}" "${INIT_AMOUNT}"
     poetry run python -m scripts.generate dev \
-      --epoch ${epoch} \
-      --init-felony-slash-scope "60" \
-      --breathe-block-interval "10 minutes" \
-      --block-interval ${blockInterval} \
-      --stake-hub-protector "${INIT_HOLDER}" \
-      --unbond-period "2 minutes" \
-      --downtime-jail-time "2 minutes" \
-      --felony-jail-time "3 minutes" \
-      --init-voting-delay "1 minutes / BLOCK_INTERVAL" \
-      --init-voting-period "2 minutes / BLOCK_INTERVAL" \
-      --init-min-period-after-quorum "uint64(1 minutes / BLOCK_INTERVAL)" \
-      --governor-protector "${INIT_HOLDER}" \
-      --init-minimal-delay "1 minutes"
+        --dev-chain-id ${CHAIN_ID} \
+        --epoch 200 \
+        --block-interval ${blockInterval} \
+        --stake-hub-protector "${INIT_HOLDER}" \
+        --governor-protector "${INIT_HOLDER}" \
+        --token-recover-portal-protector "${INIT_HOLDER}"
 }
 
-function initNetwork() {
+function init_network() {
     cd ${workspace}
     for ((i = 0; i < size; i++)); do
         mkdir ${workspace}/.local/bsc/node${i}/geth
         cp ${workspace}/keys/nodekey${i} ${workspace}/.local/bsc/node${i}/geth/nodekey
     done
-    ${workspace}/bin/geth init-network --init.dir ${workspace}/.local/bsc --init.size=${size} --config ${workspace}/config.toml ${workspace}/genesis/genesis.json
+    if [ -n "${VALIDATOR_IPS}" ]; then
+        VALIDATOR_IPS="--init.ips ${VALIDATOR_IPS}"
+    fi
+    ${workspace}/bin/geth init-network --init.dir ${workspace}/.local/bsc --init.size=${size} --config ${workspace}/config.toml ${VALIDATOR_IPS} ${workspace}/genesis/genesis.json
     rm -f ${workspace}/*bsc.log*
     for ((i = 0; i < size; i++)); do
         sed -i -e '/"<nil>"/d' ${workspace}/.local/bsc/node${i}/config.toml
         mv ${workspace}/.local/bsc/validator${i}/keystore ${workspace}/.local/bsc/node${i}/ && rm -rf ${workspace}/.local/bsc/validator${i}
 
-        cp ${workspace}/bin/geth ${workspace}/.local/bsc/node${i}/geth${i}
         # init genesis
         initLog=${workspace}/.local/bsc/node${i}/init.log
-        if  [ $i -eq 0 ] ; then
-                ${workspace}/bin/geth --datadir ${workspace}/.local/bsc/node${i} init --state.scheme ${stateScheme} --db.engine ${dbEngine} ${workspace}/genesis/genesis.json  > "${initLog}" 2>&1
-        elif  [ $i -eq 1 ] ; then
-            ${workspace}/bin/geth --datadir ${workspace}/.local/bsc/node${i} init --state.scheme path --db.engine pebble --multidatabase ${workspace}/genesis/genesis.json  > "${initLog}" 2>&1
+        if [ $i -eq 0 ]; then
+            ${workspace}/bin/geth --datadir ${workspace}/.local/bsc/node${i} init --state.scheme hash --db.engine leveldb ${workspace}/genesis/genesis.json >"${initLog}" 2>&1
+        #elif [ $i -eq 1 ]; then
+        #    ${workspace}/bin/geth --datadir ${workspace}/.local/bsc/node${i} init --state.scheme path --db.engine pebble --multidatabase ${workspace}/genesis/genesis.json >"${initLog}" 2>&1
         else
-            ${workspace}/bin/geth --datadir ${workspace}/.local/bsc/node${i} init --state.scheme path --db.engine pebble ${workspace}/genesis/genesis.json  > "${initLog}" 2>&1
+            ${workspace}/bin/geth --datadir ${workspace}/.local/bsc/node${i} init --state.scheme path --db.engine pebble ${workspace}/genesis/genesis.json >"${initLog}" 2>&1
         fi
         rm -f ${workspace}/.local/bsc/node${i}/*bsc.log*
     done
 }
 
-function native_start() {
-    PassedForkTime=`cat ${workspace}/.local/bsc/node0/hardforkTime.txt|grep passedHardforkTime|awk -F" " '{print $NF}'`
-    LastHardforkTime=$(expr ${PassedForkTime} + ${LAST_FORK_MORE_DELAY})
-
+function generate_service_config() {
     ValIdx=$1
-    for ((i = 0; i < size; i++));do
+    for ((i = 0; i < size; i++)); do
         if [ ! -z $ValIdx ] && [ $i -ne $ValIdx ]; then
             continue
         fi
 
-        for j in ${workspace}/.local/bsc/node${i}/keystore/*;do
+        for j in ${workspace}/.local/bsc/node${i}/keystore/*; do
             cons_addr="0x$(cat ${j} | jq -r .address)"
         done
 
-        HTTPPort=$((8545 + i))
-        WSPort=${HTTPPort}
+        gcmode="full"
+
+        cat >${workspace}/.local/bsc/node${i}/hardwood.service <<EOF
+[Unit]
+Description=Hard Wood Node
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+ExecStart=/usr/local/bin/geth --datadir /root/.ethereum --config /root/.ethereum/config.toml --password /root/.ethereum/password.txt --blspassword /root/.ethereum/password.txt --nodekey /root/.ethereum/geth/nodekey --unlock ${cons_addr} --miner.etherbase ${cons_addr} --gcmode ${gcmode} --syncmode full --mine --vote
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=4096
+[Install]
+WantedBy=multi-user.target
+EOF
+    done
+}
+
+function native_start() {
+    ValIdx=$1
+    for ((i = 0; i < size; i++)); do
+        if [ ! -z $ValIdx ] && [ $i -ne $ValIdx ]; then
+            continue
+        fi
+
+        for j in ${workspace}/.local/bsc/node${i}/keystore/*; do
+            cons_addr="0x$(cat ${j} | jq -r .address)"
+        done
+
+        HTTPPort=$((8545 + i * 10))
+        WSPort=$((8546 + i * 10))
         MetricsPort=$((6060 + i))
- 
+
         # geth may be replaced
         rm -f ${workspace}/.local/bsc/node${i}/geth${i}
         cp ${workspace}/bin/geth ${workspace}/.local/bsc/node${i}/geth${i}
 
-        initLog=${workspace}/.local/bsc/node${i}/init.log
-        rialtoHash=`cat ${initLog}|grep "database=chaindata"|awk -F"=" '{print $NF}'|awk -F'"' '{print $1}'`
+        gcmode="archive"
+        if [ $i -ne 0 ]; then
+            gcmode="full"
+        fi
 
-        # update `config` in genesis.json
-        ${workspace}/.local/bsc/node${i}/geth${i} dumpgenesis --datadir ${workspace}/.local/bsc/node${i} | jq . > ${workspace}/.local/bsc/node${i}/genesis.json
-
-        # run BSC node
-        nohup  ${workspace}/.local/bsc/node${i}/geth${i} --config ${workspace}/.local/bsc/node${i}/config.toml \
+        nohup ${workspace}/.local/bsc/node${i}/geth${i} --config ${workspace}/.local/bsc/node${i}/config.toml \
             --datadir ${workspace}/.local/bsc/node${i} \
             --password ${workspace}/.local/bsc/node${i}/password.txt \
             --blspassword ${workspace}/.local/bsc/node${i}/password.txt \
             --nodekey ${workspace}/.local/bsc/node${i}/geth/nodekey \
-            --unlock ${cons_addr} --miner.etherbase ${cons_addr} --rpc.allow-unprotected-txs --allow-insecure-unlock  \
-            --ws.addr 0.0.0.0 --ws.port ${WSPort} --http.addr 0.0.0.0 --http.port ${HTTPPort} --http.corsdomain "*" \
-            --metrics --metrics.addr localhost --metrics.port ${MetricsPort} --metrics.expensive \
+            --unlock ${cons_addr} --miner.etherbase ${cons_addr} --allow-insecure-unlock \
+            --ws --ws.port ${WSPort} --http.port ${HTTPPort} --metrics.port ${MetricsPort} \
             --gcmode ${gcmode} --syncmode full --mine --vote --monitor.maliciousvote \
-            --rialtohash ${rialtoHash} --override.passedforktime ${PassedForkTime} --override.pascal ${LastHardforkTime} --override.prague ${LastHardforkTime} --override.lorentz ${LastHardforkTime} \
-            --override.immutabilitythreshold ${FullImmutabilityThreshold} --override.breatheblockinterval ${BreatheBlockInterval} \
-            --override.minforblobrequest ${MinBlocksForBlobRequests} --override.defaultextrareserve ${DefaultExtraReserveForBlobRequests} \
-            > ${workspace}/.local/bsc/node${i}/bsc-node.log 2>&1 &
+            >${workspace}/.local/bsc/node${i}/bsc-node.log 2>&1 &
     done
 }
 
-function register_stakehub(){
-    if ${needRegister};then
-        echo "sleep 45s to wait feynman enable"
-        sleep 45
-        for ((i = 0; i < size; i++));do
-            ${workspace}/create-validator/create-validator --consensus-key-dir ${workspace}/keys/validator${i} --vote-key-dir ${workspace}/keys/bls${i} \
-                --password-path ${workspace}/keys/password.txt --amount 20001 --validator-desc Val${i} --rpc-url ${RPC_URL}
-        done
-    fi
+function register_stakehub() {
+    echo "sleep 45s to wait feynman enable"
+    sleep 45
+    cd ${workspace}/create-validator
+    for ((i = 0; i < size; i++)); do
+        go run main.go \
+            --consensus-key-dir ${workspace}/keys/validator${i} \
+            --vote-key-dir ${workspace}/keys/bls${i} \
+            --password-path ${workspace}/keys/password.txt \
+            --amount 20001 \
+            --validator-moniker "validatir$i moniker" \
+            --validator-identity "validatir$i identity" \
+            --validator-website "validatir$i website" \
+            --validator-details "validatir$i details" \
+            --rpc-url http://localhost:8545
+    done
 }
 
 CMD=$1
 ValidatorIdx=$2
 case ${CMD} in
-reset)
-    exit_previous
-    create_validator
+create_keys)
+    create_validator_keys
+    ;;
+create_genesis)
     reset_genesis
     prepare_config
-    initNetwork
+    init_network
+    generate_service_config $ValidatorIdx
+    ;;
+register)
+    register_stakehub
+    ;;
+reset)
+    exit_previous
+    create_validator_keys
+    reset_genesis
+    prepare_config
+    init_network
     native_start
     register_stakehub
     ;;

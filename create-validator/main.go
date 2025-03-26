@@ -23,12 +23,15 @@ import (
 )
 
 var (
-	valDescription  = flag.String("validator-desc", "test-val", "validator description")
-	amount          = flag.Int("amount", 2001, "amount of BNB to delegate")
-	rpcUrl          = flag.String("rpc-url", "http://127.0.0.1:8545", "rpc url")
-	consensusKeyDir = flag.String("consensus-key-dir", "", "consensus keys dir")
-	voteKeyDir      = flag.String("vote-key-dir", "", "vote keys dir")
-	passwordPath    = flag.String("password-path", "", "password dir")
+	validatorMoniker  = flag.String("validator-moniker", "test-val", "validator moniker")
+	validatorIdentity = flag.String("validator-identity", "", "validator identity")
+	validatorWebsite  = flag.String("validator-website", "", "validator website")
+	validatorDetails  = flag.String("validator-details", "", "validator details")
+	amount            = flag.Int("amount", 2001, "amount of BNB to delegate")
+	rpcUrl            = flag.String("rpc-url", "http://127.0.0.1:8545", "rpc url")
+	consensusKeyDir   = flag.String("consensus-key-dir", "", "consensus keys dir")
+	voteKeyDir        = flag.String("vote-key-dir", "", "vote keys dir")
+	passwordPath      = flag.String("password-path", "", "password dir")
 )
 
 func main() {
@@ -76,14 +79,14 @@ func main() {
 
 	delegation := new(big.Int).Mul(big.NewInt(int64(*amount)), big.NewInt(1e18)) // 5000000 BNB
 	description := abi.StakeHubDescription{
-		Moniker:  *valDescription,
-		Identity: *valDescription,
-		Website:  *valDescription,
-		Details:  *valDescription,
+		Moniker:  *validatorMoniker,
+		Identity: *validatorIdentity,
+		Website:  *validatorWebsite,
+		Details:  *validatorDetails,
 	}
 	commission := abi.StakeHubCommission{
-		Rate:          100,
-		MaxRate:       1000,
+		Rate:          500,
+		MaxRate:       3000,
 		MaxChangeRate: 100,
 	}
 

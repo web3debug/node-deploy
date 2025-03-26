@@ -4,15 +4,14 @@
 set -e
 
 
-basedir=$(cd `dirname $0`; pwd)
+basedir=$(cd $(dirname $0); pwd)
 workspace=${basedir}
 source ${workspace}/.env
 
 stateScheme="hash"
 syncmode="full"
-gcmode="full"
+gcmode="archive"
 index=0
-extraflags=""
 
 src=${workspace}/.local/bsc/node0
 if [ ! -d "$src" ] ;then
@@ -29,88 +28,33 @@ if [ ! -z "$3" ] ;then
 fi
 
 if [ ! -z "$4" ] ;then
-	extraflags=$4
+	gcmode=$4
 fi
 
 node=node$index
-dst=${workspace}/.local/bsc/fullnode/${node}
-hardforkfile=${workspace}/.local/bsc/hardforkTime.txt
+dst=${workspace}/.local/bsc/$gcmode/${node}
 rialtoHash=`cat $src/init.log|grep "database=chaindata"|awk -F"=" '{print $NF}'|awk -F'"' '{print $1}'`
-PassedForkTime=`cat ${workspace}/.local/bsc/hardforkTime.txt|grep passedHardforkTime|awk -F" " '{print $NF}'`
-LastHardforkTime=$(expr ${PassedForkTime} + ${LAST_FORK_MORE_DELAY})
 
 mkdir -pv $dst/
 
-function init() {
-  cp $src/config.toml $dst/ && cp $src/genesis.json $dst/
-  ${workspace}/bin/geth init --state.scheme ${stateScheme} --datadir ${dst}/ ${dst}/genesis.json
-}
+cp $src/config.toml $dst/ && cp $src/genesis.json $dst/
+${workspace}/bin/geth init --state.scheme ${stateScheme} --datadir ${dst}/ ${dst}/genesis.json
 
-function start() {
-  nohup ${workspace}/bin/geth --config $dst/config.toml --port $(( 31000 + $index ))  \
-  --datadir $dst --rpc.allow-unprotected-txs --allow-insecure-unlock \
-  --ws.addr 0.0.0.0 --ws.port $(( 8600 + $index )) --http.addr 0.0.0.0 --http.port $(( 8600 + $index )) --http.corsdomain "*" \
-  --metrics --metrics.addr 0.0.0.0 --metrics.port $(( 6100 + $index )) --metrics.expensive \
-  --gcmode $gcmode --syncmode $syncmode --state.scheme ${stateScheme} $extraflags \
-  --rialtohash ${rialtoHash} --override.passedforktime ${PassedForkTime} --override.pascal ${LastHardforkTime} --override.prague ${LastHardforkTime} \
-  --override.immutabilitythreshold ${FullImmutabilityThreshold} --override.breatheblockinterval ${BreatheBlockInterval} \
-  --override.minforblobrequest ${MinBlocksForBlobRequests} --override.defaultextrareserve ${DefaultExtraReserveForBlobRequests} \
-  > $dst/bsc-node.log 2>&1 &
-  echo $! > $dst/pid
-}
+cat >$dst/hardwood.service <<EOF
+[Unit]
+Description=Hard Wood Node
+After=network.target
 
-function pruneblock() {
-  ${workspace}/bin/geth snapshot prune-block --datadir $dst --datadir.ancient $dst/geth/chaindata/ancient/chain
-}
-
-function stop() {
-  if [ ! -f "$dst/pid" ];then
-    echo "$dst/pid not exist"
-  else
-    kill `cat $dst/pid`
-    rm -f $dst/pid
-    sleep 5
-  fi
-}
-
-function clean() {
-  stop
-  rm -rf $dst/*
-}
-
-CMD=$1
-case ${CMD} in
-start)
-    echo "===== start ===="
-    clean
-    init
-    start
-    echo "===== end ===="
-    ;;
-stop)
-    echo "===== stop ===="
-    stop
-    echo "===== end ===="
-    ;;
-restart)
-    echo "===== restart ===="
-    stop
-    start
-    echo "===== end ===="
-    ;;
-clean)
-    echo "===== clean ===="
-    clean
-    echo "===== end ===="
-    ;;
-pruneblock)
-    echo "===== pruneblock ===="
-    stop
-    pruneblock
-    echo "===== end ===="
-    ;;
-*)
-    echo "Usage: bsc_fullnode.sh start|stop|restart|clean nodeIndex syncmode"
-    echo "like: bsc_fullnode.sh start 1 snap, it will startup a snapsync node1"
-    ;;
-esac
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+ExecStart=/usr/local/bin/geth --datadir /root/.ethereum --config /root/.ethereum/config.toml --nodekey /root/.ethereum/geth/nodekey --ws --ws.addr 0.0.0.0 --ws.port 8546 --ws.origins "*" --ws.api "eth,net,web3,network,debug,txpool" --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain "*" --http.api debug,net,eth,shh,web3,txpool --http.vhosts "*" --metrics --metrics.addr localhost --metrics.port 6060 --metrics.expensive --gcmode ${gcmode} --syncmode ${syncmode} --state.scheme ${stateScheme} --mine --vote --monitor.maliciousvote --rialtohash ${rialtoHash} --override.passedforktime 0 --override.pascal 0 --override.prague 0 --override.lorentz 0 --override.immutabilitythreshold ${FullImmutabilityThreshold} --override.breatheblockinterval ${BreatheBlockInterval} --override.minforblobrequest ${MinBlocksForBlobRequests} --override.defaultextrareserve ${DefaultExtraReserveForBlobRequests}
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=4096
+[Install]
+WantedBy=multi-user.target
+EOF

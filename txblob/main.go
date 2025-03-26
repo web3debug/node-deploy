@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"math/big"
 	"time"
-	"crypto/rand"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -17,15 +17,13 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 
-	gokzg4844 "github.com/crate-crypto/go-kzg-4844"
 	"github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
+	gokzg4844 "github.com/crate-crypto/go-kzg-4844"
 )
 
 // todo do the same for sending blob transaction
 
 var edpoint = "http://127.0.0.1:8545"
-var chainId = big.NewInt(714)
-
 var account, _ = fromHexKey("59ba8068eb256d520179e903f43dacf6d8d57d72bd306e1bd603fdb8c8da10e8")
 var toAddr = common.HexToAddress("0x04d63aBCd2b9b1baa327f2Dda0f873F197ccd186")
 
@@ -62,10 +60,13 @@ type ExtAcc struct {
 }
 
 func sendBlobs(client *ethclient.Client, fromEO ExtAcc, toAddr common.Address, value *uint256.Int, nonce uint64, withSidecar bool) (common.Hash, error) {
-	tx := createNonEmptyBlobTxs(fromEO.Key, withSidecar, toAddr, value, nonce)
-
-	err := client.SendTransaction(context.Background(), tx)
+	chainId, err := client.ChainID(context.Background())
 	if err != nil {
+		return common.Hash{}, err
+	}
+	tx := createNonEmptyBlobTxs(fromEO.Key, withSidecar, toAddr, value, nonce, chainId)
+
+	if err = client.SendTransaction(context.Background(), tx); err != nil {
 		return common.Hash{}, err
 	}
 	txhash := tx.Hash()
@@ -87,14 +88,14 @@ func fromHexKey(hexkey string) (ExtAcc, error) {
 	return ExtAcc{key, addr}, nil
 }
 
-func createEmptyBlobTx(key *ecdsa.PrivateKey, withSidecar bool, toAddr common.Address, value *uint256.Int, nonce uint64) *types.Transaction {
+func createEmptyBlobTx(key *ecdsa.PrivateKey, withSidecar bool, toAddr common.Address, value *uint256.Int, nonce uint64, chainId *big.Int) *types.Transaction {
 	sidecar := &types.BlobTxSidecar{
 		Blobs:       []kzg4844.Blob{emptyBlob},
 		Commitments: []kzg4844.Commitment{emptyBlobCommit},
 		Proofs:      []kzg4844.Proof{emptyBlobProof},
 	}
 	blobtx := &types.BlobTx{
-		ChainID:    uint256.NewInt(714),
+		ChainID:    uint256.NewInt(chainId.Uint64()),
 		Nonce:      nonce,
 		GasTipCap:  uint256.NewInt(10 * params.GWei),
 		GasFeeCap:  uint256.NewInt(10 * params.GWei),
@@ -112,7 +113,7 @@ func createEmptyBlobTx(key *ecdsa.PrivateKey, withSidecar bool, toAddr common.Ad
 	return types.MustSignNewTx(key, signer, blobtx)
 }
 
-func createNonEmptyBlobTxs(key *ecdsa.PrivateKey, withSidecar bool, toAddr common.Address, value *uint256.Int, nonce uint64) *types.Transaction {
+func createNonEmptyBlobTxs(key *ecdsa.PrivateKey, withSidecar bool, toAddr common.Address, value *uint256.Int, nonce uint64, chainId *big.Int) *types.Transaction {
 	blob := randBlob()
 
 	commitment, err := kzg4844.BlobToCommitment(blob)
@@ -130,7 +131,7 @@ func createNonEmptyBlobTxs(key *ecdsa.PrivateKey, withSidecar bool, toAddr commo
 		Proofs:      []kzg4844.Proof{proof},
 	}
 	blobtx := &types.BlobTx{
-		ChainID:    uint256.NewInt(714),
+		ChainID:    uint256.NewInt(chainId.Uint64()),
 		Nonce:      nonce,
 		GasTipCap:  uint256.NewInt(10 * params.GWei),
 		GasFeeCap:  uint256.NewInt(10 * params.GWei),
