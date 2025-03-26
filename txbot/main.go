@@ -37,7 +37,7 @@ func main() {
 				fmt.Println(err)
 				continue
 			}
-			hash, err := sendEther(c, account, toAddr, big.NewInt(1e18), nonce)
+			hash, err := sendEther(c, account, toAddr, big.NewInt(1e17), nonce)
 			if err != nil {
 				fmt.Println(err)
 				continue
