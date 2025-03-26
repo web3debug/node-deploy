@@ -1,5 +1,5 @@
 [Eth]
-NetworkId = 714
+NetworkId = 162
 SyncMode = "full"
 NoPruning = false
 NoPrefetch = false
@@ -12,8 +12,9 @@ TrieTimeout = 3600000000000
 EnablePreimageRecording = false
 
 [Eth.Miner]
+GasFloor = 30000000
 GasCeil = 40000000
-GasPrice = 10000000000
+GasPrice = 1000000000
 Recommit = 10000000000
 DelayLeftOver = 50000000
 
@@ -32,7 +33,7 @@ Locals = []
 NoLocals = true
 Journal = "transactions.rlp"
 Rejournal = 3600000000000
-PriceLimit = 10000000000
+PriceLimit = 1000000000
 PriceBump = 10
 AccountSlots = 16
 GlobalSlots = 4096
@@ -46,15 +47,16 @@ HTTPHost = "0.0.0.0"
 InsecureUnlockAllowed = true
 HTTPPort = 8545
 HTTPVirtualHosts = ["*"]
-HTTPModules = ["eth", "mev", "net", "web3", "txpool", "parlia", "debug"]
+HTTPModules = ["eth", "net", "web3", "txpool", "parlia", "debug"]
 WSHost = "0.0.0.0"
 WSPort = 8545
 
 [Node.P2P]
-MaxPeers = 50
+MaxPeers = 10
 NoDiscovery = false
 StaticNodes = []
 TrustedNodes = []
+ListenAddr = ":30311"
 EnableMsgEvents = false
 
 [Node.HTTPTimeouts]
