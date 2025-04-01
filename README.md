@@ -127,26 +127,32 @@
 
    ```shell
    scp -r ./.local/bsc/node0 val-node-1:
-   scp -r ./.local/bsc/node1 val-node-1:
-   scp -r ./.local/bsc/node2 val-node-1:
-   scp -r ./.local/bsc/node3 val-node-1:
+   scp -r ./.local/bsc/node1 val-node-2:
+   scp -r ./.local/bsc/node2 val-node-3:
+   scp -r ./.local/bsc/node3 val-node-4:
    ```
 
 7. 启动验证节点
 
    节点启动使用 systemd 管理，服务器重启后会自动启动节点
 
+   * 启动第一台验证人节点
+
    ```shell
    ssh val-node-1
+   mv /root/node0 /root/.ethereum
    mv /root/.ethereum/geth0 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
    sudo systemctl enable hardwood
    sudo systemctl start hardwood
    ```
+   
+   * 启动第二台验证人节点
 
    ```shell
    ssh val-node-2
+   mv /root/node1 /root/.ethereum
    mv /root/.ethereum/geth1 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
@@ -154,8 +160,11 @@
    sudo systemctl start hardwood
    ```
 
+   * 启动第三台验证人节点
+
    ```shell
    ssh val-node-3
+   mv /root/node2 /root/.ethereum
    mv /root/.ethereum/geth2 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
@@ -163,13 +172,22 @@
    sudo systemctl start hardwood
    ```
 
+   * 启动第四台验证人节点
+
    ```shell
    ssh val-node-4
+   mv /root/node3 /root/.ethereum
    mv /root/.ethereum/geth3 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
    sudo systemctl enable hardwood
    sudo systemctl start hardwood
+   ```
+   
+   * 查看节点运行日志
+   
+   ```shell
+   tail -f /root/.ethereum/bsc.log
    ```
 
 8. 注册验证人信息
