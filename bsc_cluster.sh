@@ -203,8 +203,8 @@ function native_start() {
 }
 
 function register_stakehub() {
-    echo "sleep 45s to wait feynman enable"
-    sleep 45
+    echo "sleep 20s to wait feynman enable"
+    sleep 20
     cd ${workspace}/create-validator
     for ((i = 0; i < size; i++)); do
         go run main.go \
@@ -212,10 +212,10 @@ function register_stakehub() {
             --vote-key-dir ${workspace}/keys/bls${i} \
             --password-path ${workspace}/keys/password.txt \
             --amount 20001 \
-            --validator-moniker "validatir$i moniker" \
-            --validator-identity "validatir$i identity" \
-            --validator-website "validatir$i website" \
-            --validator-details "validatir$i details" \
+            --validator-moniker "Moniker$i" \
+            --validator-identity "" \
+            --validator-website "https://privatex.io" \
+            --validator-details "first validator" \
             --rpc-url http://localhost:8545
     done
 }

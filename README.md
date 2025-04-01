@@ -207,7 +207,7 @@
    下面是一个一个给验证人注册信息，这里可以根据需要修改每一位验证人的委托amount、moniker、identity、website、details信息。
    
    amount 的单位已经成包含了18位的精度，例如：20001表示20001个HEC
-   moniker 必须设置
+   moniker 必须设置，长度在 3-9 之间，第一个字符必须大写，只能包含字母、数字
    identity 可以为空
    website 可以为空，建议设置
    details 可以为空，建议设置
@@ -226,10 +226,10 @@
      --vote-key-dir ./keys/bls0 \
      --password-path ./keys/password.txt \
      --amount 20001 \
-     --validator-moniker "validatir0 moniker" \
-     --validator-identity "validatir0 identity" \
-     --validator-website "validatir0 website" \
-     --validator-details "validatir0 details" \
+     --validator-moniker "Moniker1" \
+     --validator-identity "" \
+     --validator-website "https://privatex.io" \
+     --validator-details "first validator" \
      --rpc-url ${RPC_URL}
    ```
    
@@ -241,10 +241,10 @@
      --vote-key-dir ./keys/bls1 \
      --password-path ./keys/password.txt \
      --amount 20001 \
-     --validator-moniker "validatir1 moniker" \
-     --validator-identity "validatir1 identity" \
-     --validator-website "validatir1 website" \
-     --validator-details "validatir1 details" \
+     --validator-moniker "Moniker2" \
+     --validator-identity "" \
+     --validator-website "https://privatex.io" \
+     --validator-details "second validator" \
      --rpc-url ${RPC_URL}
    ```
    
@@ -256,10 +256,10 @@
      --vote-key-dir ./keys/bls2 \
      --password-path ./keys/password.txt \
      --amount 20001 \
-     --validator-moniker "validatir2 moniker" \
-     --validator-identity "validatir2 identity" \
-     --validator-website "validatir2 website" \
-     --validator-details "validatir2 details" \
+     --validator-moniker "Moniker3" \
+     --validator-identity "" \
+     --validator-website "https://privatex.io" \
+     --validator-details "third validator" \
      --rpc-url ${RPC_URL}
    ```
 
@@ -271,10 +271,10 @@
      --vote-key-dir ./keys/bls3 \
      --password-path ./keys/password.txt \
      --amount 20001 \
-     --validator-moniker "validatir3 moniker" \
-     --validator-identity "validatir3 identity" \
-     --validator-website "validatir3 website" \
-     --validator-details "validatir3 details" \
+     --validator-moniker "Moniker4" \
+     --validator-identity "" \
+     --validator-website "https://privatex.io" \
+     --validator-details "fourth validator" \
      --rpc-url ${RPC_URL}
    ```   
 

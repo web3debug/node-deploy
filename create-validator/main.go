@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -146,6 +147,14 @@ func main() {
 	}
 
 	fmt.Println("send createValidator. Tx hash:", signedTx.Hash().Hex())
+
+	receipt, err := bind.WaitMined(context.Background(), client, signedTx)
+	if err != nil {
+		panic(err)
+	}
+	if receipt.Status != 1 {
+		panic("createValidator failed")
+	}
 }
 
 func getBlsKeymanager(walletPath, password string) (keymanager.IKeymanager, error) {
