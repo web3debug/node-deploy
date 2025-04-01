@@ -102,7 +102,7 @@
 
 4. 修改 .env 文件
 
-   可修改变量，其他变量请勿修改
+   可修改变量，其他变量请勿修改，如果重新部署，从这里开始，不需要重新执行上面的步骤：
    
    * `VALIDATOR_SIZE` 验证节点数量
    * `VALIDATOR_IPS` 验证节点 IP 地址，多个节点用逗号分隔
@@ -114,6 +114,14 @@
 
 5. 生成 genesis 文件及节点配置文件
 
+   * 如果是重新部署，清理旧数据
+   ```shell
+   make clear
+   ```
+   * 获取最新代码
+   ```shell
+   git pull
+   ```
    * 创建验证人 keys，生成的文件在 `keys` 目录下，注意备份保管，同时会拷贝到 `.local` 文件中，之后会被拷贝到对应的验证人节点服务器上
    ```shell
    bash +x ./bsc_cluster.sh create_keys
@@ -140,6 +148,7 @@
 
    ```shell
    ssh val-node-1
+   rm -rf /root/.ethereum # 如果存在，删除原有数据
    mv /root/node0 /root/.ethereum
    mv /root/.ethereum/geth0 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
@@ -152,6 +161,7 @@
 
    ```shell
    ssh val-node-2
+   rm -rf /root/.ethereum # 如果存在，删除原有数据
    mv /root/node1 /root/.ethereum
    mv /root/.ethereum/geth1 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
@@ -164,6 +174,7 @@
 
    ```shell
    ssh val-node-3
+   rm -rf /root/.ethereum # 如果存在，删除原有数据
    mv /root/node2 /root/.ethereum
    mv /root/.ethereum/geth2 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
@@ -176,6 +187,7 @@
 
    ```shell
    ssh val-node-4
+   rm -rf /root/.ethereum # 如果存在，删除原有数据
    mv /root/node3 /root/.ethereum
    mv /root/.ethereum/geth3 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
