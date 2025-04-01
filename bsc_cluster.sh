@@ -8,10 +8,10 @@ basedir=$(cd $(dirname $0) && pwd)
 workspace=${basedir}
 source ${workspace}/.env
 
-GENESIS_COMMIT="7c97e5f94f728107de36e6de3f3ac39a9bde2837" # pascal commit
+GENESIS_COMMIT="36a3c6bce5a84223057276d46a22b51a0d2ab4e5" # pascal commit
 INIT_HOLDER=$PROTECTOR
 size=${VALIDATOR_SIZE:-1}
-blockInterval=${BLOCK_INTERVAL:-3}
+blockInterval=${BLOCK_INTERVAL:-"1 seconds"}
 sleepBeforeStart=5
 
 # stop geth client
@@ -98,7 +98,7 @@ function prepare_config() {
     poetry run python -m scripts.generate dev \
         --dev-chain-id ${CHAIN_ID} \
         --epoch 200 \
-        --block-interval ${blockInterval} \
+        --block-interval "${blockInterval}" \
         --stake-hub-protector "${INIT_HOLDER}" \
         --governor-protector "${INIT_HOLDER}" \
         --token-recover-portal-protector "${INIT_HOLDER}"
