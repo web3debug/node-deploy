@@ -105,6 +105,7 @@
    ```shell
    cp ../bsc/build/bin/geth ./bin/
    cp ../bsc/build/bin/bootnode ./bin/
+   ./bin/geth version
    ```
 
 4. 修改 .env 文件
@@ -131,14 +132,34 @@
    ```
    * 创建验证人 keys，生成的文件在 `keys` 目录下，注意备份保管，同时会拷贝到 `.local` 文件中，之后会被拷贝到对应的验证人节点服务器上
    ```shell
-   bash +x ./bsc_cluster.sh create_keys
+   bash -x ./bsc_cluster.sh create_keys
    ```
    * 生成 genesis 文件
    ```shell
-   bash +x ./bsc_cluster.sh create_genesis
+   bash -x ./bsc_cluster.sh create_genesis
    ```
 
 6. 将节点配置文件拷贝到对应的节点服务器上
+
+   * 检查配置文件是否生成成功
+   ```shell
+   ls -al .local/bsc/node0/
+   ```
+   ```
+   drwxr-xr-x 5 root root     4096 Apr  2 13:13 .
+   drwxr-xr-x 3 root root     4096 Apr  2 13:13 ..
+   drwx------ 4 root root     4096 Apr  2 13:12 bls
+   -rw-r--r-- 1 root root     2446 Apr  2 13:13 config.toml
+   -rw-r--r-- 1 root root   377147 Apr  2 13:13 genesis.json
+   drwxr-xr-x 3 root root     4096 Apr  2 13:13 geth
+   -rwxr-xr-x 1 root root 79675752 Apr  2 13:13 geth0
+   -rw-r--r-- 1 root root      634 Apr  2 13:13 hardwood.service
+   -rw-r--r-- 1 root root     1491 Apr  2 13:13 init.log
+   drwx------ 2 root root     4096 Apr  2 13:12 keystore
+   -rw-r--r-- 1 root root       11 Apr  2 13:12 password.txt
+   ```
+   
+   * 拷贝节点配置文件到对应的节点服务器上
 
    ```shell
    scp -r ./.local/bsc/node0 val-node-1:
@@ -307,7 +328,7 @@
    下面脚本的第一个参数表示第几个节点，从0开始，第二个参数表示节点类型，archive 表示 archive node 节点，full 表示 full node 节点
 
    ```shell
-   bash +x ./bsc_fullnode.sh 0 archive
+   bash -x ./bsc_fullnode.sh 0 archive
    ```
 
 2. 将节点配置文件拷贝到 archive node 服务器上
