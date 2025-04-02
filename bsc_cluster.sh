@@ -8,7 +8,7 @@ basedir=$(cd $(dirname $0) && pwd)
 workspace=${basedir}
 source ${workspace}/.env
 
-GENESIS_COMMIT="36a3c6bce5a84223057276d46a22b51a0d2ab4e5" # pascal commit
+GENESIS_COMMIT="f65ee7e365e39b3dc47e3773311760939798aca4" # pascal commit
 INIT_HOLDER=$PROTECTOR
 size=${VALIDATOR_SIZE:-1}
 blockInterval=${BLOCK_INTERVAL:-"1 seconds"}
@@ -89,9 +89,9 @@ function prepare_config() {
     cd ${workspace}/genesis/
     git checkout HEAD contracts
 
-    sed -i -e '/registeredContractChannelMap\[VALIDATOR_CONTRACT_ADDR\]\[STAKING_CHANNELID\]/d' ${workspace}/genesis/contracts/deprecated/CrossChain.sol
-    sed -i -e 's/alreadyInit = true;/turnLength = 4;alreadyInit = true;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
-    sed -i -e 's/public onlyCoinbase onlyZeroGasPrice {/public onlyCoinbase onlyZeroGasPrice {if (block.number < 30) return;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
+    #sed -i -e '/registeredContractChannelMap\[VALIDATOR_CONTRACT_ADDR\]\[STAKING_CHANNELID\]/d' ${workspace}/genesis/contracts/deprecated/CrossChain.sol
+    #sed -i -e 's/alreadyInit = true;/turnLength = 4;alreadyInit = true;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
+    #sed -i -e 's/public onlyCoinbase onlyZeroGasPrice {/public onlyCoinbase onlyZeroGasPrice {if (block.number < 30) return;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
 
     poetry run python -m scripts.generate generate-validators
     poetry run python -m scripts.generate generate-init-holders "${initHolders}" "${INIT_AMOUNT}"
@@ -142,6 +142,10 @@ function generate_service_config() {
         for j in ${workspace}/.local/bsc/node${i}/keystore/*; do
             cons_addr="0x$(cat ${j} | jq -r .address)"
         done
+
+        # geth may be replaced
+        rm -f ${workspace}/.local/bsc/node${i}/geth${i}
+        cp ${workspace}/bin/geth ${workspace}/.local/bsc/node${i}/geth${i}
 
         gcmode="full"
 

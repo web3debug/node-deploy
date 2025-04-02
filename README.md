@@ -49,7 +49,9 @@
 
    ```shell
    curl -L https://foundry.paradigm.xyz | bash
+   foundryup --version
    foundryup
+   forge --version
    ```
 5. 安装 pipx
 
@@ -59,6 +61,7 @@
    sudo apt update
    sudo apt install pipx
    pipx ensurepath
+   pipx --version
    ```
    
 6. 安装 poetry
@@ -90,6 +93,10 @@
 2. 安装依赖
 
    ```shell
+   sudo apt-get update
+   sudo apt-get install python3.12-venv
+   python3 -m venv venv
+   source venv/bin/activate
    pip3 install -r requirements.txt
    ```
 
