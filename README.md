@@ -10,7 +10,8 @@
 
 ### 创建验证节点服务器（4台）
 
-> 验证人节点也是full node节点，提供给钱包使用
+   验证节点上有验证人私钥，节点出快时需要用到私钥签名，所以私钥是解锁状态，如果公开rpc，可能导致验证人资产损失，[官方也不推荐公开RPC](https://docs.bnbchain.org/bnb-smart-chain/validator/run-val/#3-start-validator-node)，
+   所以，如果需要提供RPC服务，可以单独创建一个（不够了再加）full node节点，用于提供RPC服务，这样可以保证验证人私钥安全。
 
    * 系统: ubuntu 24.04.1 LTS
    * CPU: 2核4G
