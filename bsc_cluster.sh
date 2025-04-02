@@ -71,11 +71,14 @@ function reset_genesis() {
 function prepare_config() {
     rm -f ${workspace}/genesis/validators.conf
 
-    initHolders=${INIT_HOLDERS}
     for ((i = 0; i < size; i++)); do
         for f in ${workspace}/.local/bsc/validator${i}/keystore/*; do
             cons_addr="0x$(cat ${f} | jq -r .address)"
-            initHolders=${initHolders}","${cons_addr}
+            if [ -z $validators ]; then
+                validators=${cons_addr}
+            else
+                validators=${validators}","${cons_addr}
+            fi
             fee_addr=${cons_addr}
         done
 
@@ -99,7 +102,7 @@ function prepare_config() {
     #sed -i -e 's/public onlyCoinbase onlyZeroGasPrice {/public onlyCoinbase onlyZeroGasPrice {if (block.number < 30) return;/' ${workspace}/genesis/contracts/BSCValidatorSet.sol
 
     poetry run python -m scripts.generate generate-validators
-    poetry run python -m scripts.generate generate-init-holders "${initHolders}" "${INIT_AMOUNT}"
+    poetry run python -m scripts.generate generate-init-holders "${validators}" "${INIT_HOLDERS}" "${INIT_AMOUNT}"
     poetry run python -m scripts.generate dev \
         --dev-chain-id ${CHAIN_ID} \
         --epoch 200 \

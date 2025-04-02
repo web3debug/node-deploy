@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -51,6 +52,16 @@ func main() {
 	client, err := ethclient.Dial(*rpcUrl)
 	if err != nil {
 		panic(err)
+	}
+	for i := 0; i < 50; i++ {
+		number, err := client.BlockNumber(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		if number > 8 {
+			break
+		}
+		time.Sleep(time.Second)
 	}
 
 	bz, err := os.ReadFile(*passwordPath)

@@ -116,9 +116,11 @@
    * `VALIDATOR_IPS` 验证节点 IP 地址，多个节点用逗号分隔
    * `BLOCK_INTERVAL` 出块间隔
    * `KEYPASS` 验证人私钥密码，验证人私钥将自动生成，并备份在 keys 目录，注意保管好密码和私钥
-   * `PROTECTOR` 链管理员地址
-   * `INIT_HOLDERS` 初始持币地址，可以配置多个，持币数量在 `INIT_AMOUNT` 中配置
-   * `INIT_AMOUNT` 初始持币数量，管理员地址也会分配这个数量的HEC
+   * `INIT_HOLDERS` 初始地址，可以配置多个，持币数量在 `INIT_AMOUNT` 中配置
+   * `INIT_AMOUNT` 初始地址持币 HEC 数量
+   * `PROTECTOR` 链管理员地址，默认不分配 HEC，如果需要可以将地址配置在 `INIT_HOLDERS` 中
+   
+   > 说明：验证人地址初始分配 HEC 数量为 20010，其中 20001 将用于委托
 
 5. 生成 genesis 文件及节点配置文件
 
