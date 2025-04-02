@@ -284,16 +284,43 @@
 
 ## 部署 archive node 节点
 
-> 待补充。。。
+### 创建archive node 或 full node节点服务器（1台）
 
-### 创建archive node节点服务器（1台）
-
-> 提供给浏览器使用
+> 下面将以部署 archive 节点举例，提供给浏览器使用，根据需要可以部署多个 archive 或 full 节点
 
 * 系统: ubuntu 24.04.1 LTS
 * CPU: 8核8G
 * 系统盘(SSD): 20G
 * 数据盘(SSD): 100G，用于存储节点数据，方便扩容，可以使用好一点的ssd
+
+### 在部署服务器上准备环境
+
+1. 生成 archive node 节点配置文件
+   
+   下面脚本的第一个参数表示第几个节点，从0开始，第二个参数表示节点类型，archive 表示 archive node 节点，full 表示 full node 节点
+
+   ```shell
+   bash +x ./bsc_fullnode.sh 0 archive
+   ```
+
+2. 将节点配置文件拷贝到 archive node 服务器上
+
+   ```shell
+   scp -r ./.local/bsc/archive/node0 archive-node-1:
+   ```
+
+3. 启动 archive node
+
+   ```shell
+   ssh archive-node-1
+   rm -rf /root/.ethereum # 如果存在，删除原有数据
+   mv /root/node0 /root/.ethereum
+   mv /root/.ethereum/geth /usr/local/bin/geth
+   mv /root/.ethereum/hardwood.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable hardwood
+   sudo systemctl start hardwood
+   ```
 
 ## 节点监控
 
@@ -302,3 +329,4 @@ metrics 监控默认以开启，可以使用 prometheus 收集节点服务器的
 ## 节点维护注意事项
 
 * 定期检查服务器磁盘空间，及时清理日志文件（建议使用定时任务），日志文件保存在 `root/.ethereum/`，不要删除最新（看文件名）的日志文件及`bsc.log`，建议将日志等级调整为 `error` 级别
+* 如果没有外部节点，节点服务器最好不要暴露端口在公网上
