@@ -237,11 +237,11 @@
    
    下面是一个一个给验证人注册信息，这里可以根据需要修改每一位验证人的委托amount、moniker、identity、website、details信息。
    
-   amount 的单位已经成包含了18位的精度，例如：20001表示20001个HEC
-   moniker 必须设置，长度在 3-9 之间，第一个字符必须大写，只能包含字母、数字
-   identity 可以为空
-   website 可以为空，建议设置
-   details 可以为空，建议设置
+   * amount 的单位已经成包含了18位的精度，例如：20001表示20001个HEC
+   * moniker 必须设置，长度在 3-9 之间，第一个字符必须大写，只能包含字母、数字
+   * identity 可以为空
+   * website 可以为空，建议设置
+   * details 可以为空，建议设置
    
    ![validator_moniker.png](validator_moniker.png)
 
