@@ -40,7 +40,7 @@ HTTPModules = ["eth", "net", "web3", "txpool", "debug"]
 WSHost = "0.0.0.0"
 WSPort = 8546
 WSOrigins = ["*"]
-WSModules = ["eth", "net", "web3", "network", "txpool", "debug"]
+WSModules = ["eth", "net", "web3", "txpool", "debug"]
 
 [Node.P2P]
 MaxPeers = 30

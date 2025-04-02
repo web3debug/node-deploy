@@ -77,7 +77,7 @@
 
    ```shell
    git clone https://github.com/bnb-chain/bsc.git 
-   (cd bsc && make all)
+   (cd bsc && git checkout v1.5.7 && make all)
    ```
 
 ## 部署验证人节点（也是full node节点）
@@ -110,7 +110,7 @@
 
 4. 修改 .env 文件
 
-   可修改变量，其他变量请勿修改，如果重新部署，从这里开始，不需要重新执行上面的步骤：
+   可修改变量，如果重新部署，从这里开始，不需要重新执行上面的步骤：
    
    * `VALIDATOR_SIZE` 验证节点数量
    * `VALIDATOR_IPS` 验证节点 IP 地址，多个节点用逗号分隔
@@ -239,6 +239,8 @@
    identity 可以为空
    website 可以为空，建议设置
    details 可以为空，建议设置
+   
+   ![validator_moniker.png](validator_moniker.png)
 
    以下操作在部署服务器上执行，需要提前设置 RPC_URL 环境变量，IP 为任意一个验证人节点 IP 地址
 

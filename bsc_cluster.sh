@@ -8,11 +8,16 @@ basedir=$(cd $(dirname $0) && pwd)
 workspace=${basedir}
 source ${workspace}/.env
 
-GENESIS_COMMIT="f65ee7e365e39b3dc47e3773311760939798aca4" # pascal commit
+GENESIS_COMMIT=$(grep '\-\-hard' Makefile | awk '{print $7}')
 INIT_HOLDER=$PROTECTOR
 size=${VALIDATOR_SIZE:-1}
 blockInterval=${BLOCK_INTERVAL:-"1 seconds"}
 sleepBeforeStart=5
+
+geth_version=$(${workspace}/bin/geth version | head -n 2 | tail -n 1 | awk '{print $2}')
+if [ $geth_version != "1.5.7" ]; then
+    echo "geth version must be 1.5.7" && exit 1
+fi
 
 # stop geth client
 function exit_previous() {
@@ -240,7 +245,7 @@ register)
     register_stakehub
     ;;
 reset)
-    exit_previous
+#    exit_previous
     create_validator_keys
     reset_genesis
     prepare_config
