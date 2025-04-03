@@ -372,6 +372,8 @@
 
 2. 将节点配置文件拷贝到 archive node 服务器上
 
+   先将生成的 `./.local/bsc/archive/node0/config.toml` 文件中 `HTTPHost` 修改为 `0.0.0.0` 或 `127.0.0.1`
+
    ```shell
    scp -r ./.local/bsc/archive/node0 archive-node-1:
    ```
