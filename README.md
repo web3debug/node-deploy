@@ -232,6 +232,10 @@
    ```shell
    tail -f /root/.ethereum/bsc.log
    ```
+   
+   ```shell
+   journalctl -u hardwood
+   ```
 
 8. 注册验证人信息
    
