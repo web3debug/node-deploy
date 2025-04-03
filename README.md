@@ -424,7 +424,8 @@ make reset
 * 检查节点允许状态
 
 ```shell
-tail -f .local/bsc/node0/geth/bsc.log
+ps -ef | grep geth
+tail -f .local/bsc/node0/bsc.log
 ```
 
 * 启动节点，如果节点停止
