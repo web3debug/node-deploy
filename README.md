@@ -10,7 +10,7 @@
 
 ### 创建验证节点服务器（4台）
 
-   验证节点上有验证人私钥，节点出快时需要用到私钥签名，所以私钥是解锁状态，如果公开rpc，可能导致验证人资产损失，[官方也不推荐公开RPC](https://docs.bnbchain.org/bnb-smart-chain/validator/run-val/#3-start-validator-node)，
+   验证节点上有验证人私钥，节点出快时需要用到私钥签名，所以私钥是解锁状态，如果公开rpc（8545、8546端口），可能导致验证人资产损失，[官方也不推荐公开RPC](https://docs.bnbchain.org/bnb-smart-chain/validator/run-val/#3-start-validator-node)，
    所以，如果需要提供RPC服务，可以单独创建一个（不够了再加）full node节点，用于提供RPC服务，这样可以保证验证人私钥安全。
 
    * 系统: ubuntu 24.04.1 LTS
@@ -141,6 +141,18 @@
    ```shell
    bash -x ./bsc_cluster.sh create_genesis
    ```
+
+   * 关闭 8545、8546 端口对外访问
+   
+   将 config 文件中的 `0.0.0.0` 修改为 `127.0.0.1`，例如：
+   ```
+   [Node]
+   HTTPHost = "127.0.0.1"
+   HTTPPort = 8545
+   WSHost = "127.0.0.1"
+   WSPort = 8546
+   ```
+   也可以通过修改服务器安全组
 
 6. 将节点配置文件拷贝到对应的节点服务器上
 
@@ -372,7 +384,7 @@
 
 2. 将节点配置文件拷贝到 archive node 服务器上
 
-   先将生成的 `./.local/bsc/archive/node0/config.toml` 文件中 `HTTPHost` 修改为 `0.0.0.0` 或 `127.0.0.1`
+   先将生成的 `./.local/bsc/archive/node0/config.toml` 文件中 `HTTPHost` 修改为 `0.0.0.0` (应该需要对外提供服务)
 
    ```shell
    scp -r ./.local/bsc/archive/node0 archive-node-1:
