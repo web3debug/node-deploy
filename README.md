@@ -188,6 +188,8 @@
    sudo systemctl start hardwood
    ```
    
+   ![start_node.png](start_node.png)
+   
    * 启动第二台验证人节点
 
    ```shell
