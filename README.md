@@ -244,6 +244,18 @@
    ```shell
    sudo systemctl status hardwood
    ```
+   
+   * 停止节点
+   
+   ```shell
+   sudo systemctl stop hardwood
+   ```
+
+   * 重启节点
+    
+   ```shell
+   sudo systemctl restart hardwood
+   ```
 
 8. 注册验证人信息
    
