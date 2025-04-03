@@ -116,12 +116,12 @@
    * `VALIDATOR_SIZE` 验证节点数量
    * `VALIDATOR_IPS` 验证节点 IP 地址，多个节点用逗号分隔
    * `BLOCK_INTERVAL` 出块间隔
-   * `KEYPASS` 验证人私钥密码，验证人私钥将自动生成，并备份在 keys 目录，注意保管好密码和私钥
+   * `KEYPASS` 验证人私钥密码，验证人私钥将自动生成，并备份在 keys 目录，注意保管好密码和私钥，密码长度必须大于 10 位
    * `INIT_HOLDERS` 初始地址，可以配置多个，持币数量在 `INIT_AMOUNT` 中配置
    * `INIT_AMOUNT` 初始地址持币 HEC 数量
    * `PROTECTOR` 链管理员地址，默认不分配 HEC，如果需要可以将地址配置在 `INIT_HOLDERS` 中
    
-   > 说明：验证人地址初始分配 HEC 数量为 20010，其中 20001 将用于委托
+   > 说明：验证人地址初始分配 HEC 数量为 20010，其中 20001 将用于委托，剩余留作备用手续费
 
 5. 生成 genesis 文件及节点配置文件
 
@@ -179,8 +179,8 @@
 
    ```shell
    ssh val-node-1
-   rm -rf /root/.ethereum # 如果存在，删除原有数据
-   mv /root/node0 /root/.ethereum
+   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
+   mv /root/node0/* /root/.ethereum/ && rm -rf /root/node0
    mv /root/.ethereum/geth0 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
@@ -194,8 +194,8 @@
 
    ```shell
    ssh val-node-2
-   rm -rf /root/.ethereum # 如果存在，删除原有数据
-   mv /root/node1 /root/.ethereum
+   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
+   mv /root/node1/* /root/.ethereum/ && rm -rf /root/node1
    mv /root/.ethereum/geth1 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
@@ -207,8 +207,8 @@
 
    ```shell
    ssh val-node-3
-   rm -rf /root/.ethereum # 如果存在，删除原有数据
-   mv /root/node2 /root/.ethereum
+   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
+   mv /root/node2/* /root/.ethereum/ && rm -rf /root/node2
    mv /root/.ethereum/geth2 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
@@ -220,8 +220,8 @@
 
    ```shell
    ssh val-node-4
-   rm -rf /root/.ethereum # 如果存在，删除原有数据
-   mv /root/node3 /root/.ethereum
+   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
+   mv /root/node3/* /root/.ethereum/ && rm -rf /root/node3
    mv /root/.ethereum/geth3 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
@@ -385,5 +385,5 @@ metrics 监控默认以开启，可以使用 prometheus 收集节点服务器的
 
 ## 节点维护注意事项
 
-* 定期检查服务器磁盘空间，及时清理日志文件（建议使用定时任务），日志文件保存在 `root/.ethereum/`，不要删除最新（看文件名）的日志文件及`bsc.log`，建议将日志等级调整为 `error` 级别
-* 如果没有外部节点，节点服务器最好不要暴露端口在公网上
+* 定期检查服务器磁盘空间，及时清理日志文件（建议使用定时任务），日志文件保存在 `root/.ethereum/`，不要删除最新（看文件名）的日志文件及`bsc.log`，或者可以将日志等级调整为 `error` 级别
+* 如果没有外部节点，验证人节点服务器最好不要暴露端口在公网上，特别是 8545、8546 端口，否则可能导致资产损失，如果有外部节点也只需要开放 p2p 端口 30311
