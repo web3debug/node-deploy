@@ -237,6 +237,12 @@
    journalctl -u hardwood
    ```
 
+   * 查看节点状态
+   
+   ```shell
+   sudo systemctl status hardwood
+   ```
+
 8. 注册验证人信息
    
    下面是一个一个给验证人注册信息，这里可以根据需要修改每一位验证人的委托amount、moniker、identity、website、details信息。
