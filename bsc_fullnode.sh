@@ -36,7 +36,7 @@ dst=${workspace}/.local/bsc/$gcmode/node$index
 mkdir -pv $dst/
 
 cp $src/config.toml $dst/ && cp $src/genesis.json $dst/
-cp ${workspace}/bin/geth $dst/
+cp ${workspace}/bin/geth $dst/geth$index
 ${workspace}/bin/geth init --state.scheme ${stateScheme} --datadir ${dst}/ ${dst}/genesis.json
 
 cat >$dst/hardwood.service <<EOF
@@ -48,7 +48,7 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/root
-ExecStart=/usr/local/bin/geth --datadir /root/.ethereum --config /root/.ethereum/config.toml --password /root/.ethereum/password.txt --blspassword /root/.ethereum/password.txt --nodekey /root/.ethereum/geth/nodekey --gcmode ${gcmode} --syncmode ${syncmode}
+ExecStart=/usr/local/bin/geth --datadir /root/.ethereum --config /root/.ethereum/config.toml --nodekey /root/.ethereum/geth/nodekey --gcmode ${gcmode} --syncmode ${syncmode}
 Restart=always
 RestartSec=5
 StandardOutput=journal

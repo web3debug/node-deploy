@@ -272,13 +272,15 @@
    以下操作在部署服务器上执行，需要提前设置 RPC_URL 环境变量，IP 为任意一个验证人节点 IP 地址
 
    ```shell
+   cd ./create-validator
+   go mod download
    export RPC_URL=<ip>:8545
    ```   
 
    * 给第一个验证人注册信息
    
    ```shell
-   go run ./create-validator/main.go \
+   go run ./main.go \
      --consensus-key-dir ./keys/validator0 \
      --vote-key-dir ./keys/bls0 \
      --password-path ./keys/password.txt \
@@ -293,7 +295,7 @@
    * 给第二个验证人注册信息
    
    ```shell
-   go run ./create-validator/main.go \
+   go run ./main.go \
      --consensus-key-dir ./keys/validator1 \
      --vote-key-dir ./keys/bls1 \
      --password-path ./keys/password.txt \
@@ -308,7 +310,7 @@
    * 给第三个验证人注册信息
    
    ```shell
-   go run ./create-validator/main.go \
+   go run ./main.go \
      --consensus-key-dir ./keys/validator2 \
      --vote-key-dir ./keys/bls2 \
      --password-path ./keys/password.txt \
@@ -323,7 +325,7 @@
    * 给第四个验证人注册信息
 
    ```shell
-   go run ./create-validator/main.go \
+   go run ./main.go \
      --consensus-key-dir ./keys/validator3 \
      --vote-key-dir ./keys/bls3 \
      --password-path ./keys/password.txt \
@@ -348,13 +350,15 @@
 * 系统: ubuntu 24.04.1 LTS
 * CPU: 8核8G
 * 系统盘(SSD): 20G
-* 数据盘(SSD): 100G，用于存储节点数据，方便扩容，可以使用好一点的ssd
+* 数据盘(SSD): 100G，用于存储节点数据，方便扩容，将数据盘挂载到 /root/.ethereum 目录，可以使用好一点的ssd
 
 ### 在部署服务器上准备环境
 
 1. 生成 archive node 节点配置文件
    
-   下面脚本的第一个参数表示第几个节点，从0开始，第二个参数表示节点类型，archive 表示 archive node 节点，full 表示 full node 节点
+   下面脚本参数说明：
+      * 第一个参数表示节点编号，为第几台节点生成配置文件，节点编号从 0 开始
+      * 第二个参数表示节点类型，archive 表示 archive node 节点，full 表示 full node 节点
 
    ```shell
    bash -x ./bsc_fullnode.sh 0 archive
@@ -370,9 +374,9 @@
 
    ```shell
    ssh archive-node-1
-   rm -rf /root/.ethereum # 如果存在，删除原有数据
-   mv /root/node0 /root/.ethereum
-   mv /root/.ethereum/geth /usr/local/bin/geth
+   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
+   mv /root/node0/* /root/.ethereum/ && rm -rf /root/node0
+   mv /root/.ethereum/geth0 /usr/local/bin/geth
    mv /root/.ethereum/hardwood.service /etc/systemd/system/
    sudo systemctl daemon-reload
    sudo systemctl enable hardwood
