@@ -376,7 +376,12 @@
 
    下面脚本参数说明：
       * 第一个参数表示节点编号，为第几台节点生成配置文件，节点编号从 0 开始
-      * 第二个参数表示节点类型，archive 表示 archive node 节点，full 表示 full node 节点
+      * 第二个参数表示节点类型，`archive` 表示 archive 节点，`full` 表示 full 节点
+
+   举例：
+   * `bash -x ./bsc_fullnode.sh 0 archive` 表示生成第 1 台节点的 archive 节点配置文件
+   * `bash -x ./bsc_fullnode.sh 1 archive` 表示生成第 2 台节点的 archive 节点配置文件
+   * `bash -x ./bsc_fullnode.sh 0 full` 表示生成第 1 台节点的 full 节点配置文件
 
    ```shell
    bash -x ./bsc_fullnode.sh 0 archive
