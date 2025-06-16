@@ -65,9 +65,13 @@
 
 ## 编译 geth
 
+   `debug/100` 分支表示出块时间间隔为 100ms
+   `debug/300` 分支表示出块时间间隔为 300ms
+   `debug/500` 分支表示出块时间间隔为 500ms
+
    ```shell
-   git clone https://github.com/bnb-chain/bsc.git 
-   (cd bsc && git checkout v1.5.7 && make all)
+   git clone https://github.com/web3debug/bsc.git 
+   (cd bsc && git checkout debug/300 && make all)
    ```
 
 ## 部署验证人节点（也是full node节点）
@@ -97,10 +101,10 @@
    * `BLOCK_INTERVAL` 出块间隔
    * `KEYPASS` 验证人私钥密码，验证人私钥将自动生成，并备份在 keys 目录，注意保管好密码和私钥，密码长度必须大于 10 位
    * `INIT_HOLDERS` 初始地址，可以配置多个，持币数量在 `INIT_AMOUNT` 中配置
-   * `INIT_AMOUNT` 初始地址持币 HEC 数量
-   * `PROTECTOR` 链管理员地址，默认不分配 HEC，如果需要可以将地址配置在 `INIT_HOLDERS` 中
+   * `INIT_AMOUNT` 初始地址持币 CCC 数量
+   * `PROTECTOR` 链管理员地址，默认不分配 CCC，如果需要可以将地址配置在 `INIT_HOLDERS` 中
    
-   > 说明：验证人地址初始分配 HEC 数量为 20010，其中 20001 将用于委托，剩余留作备用手续费
+   > 说明：验证人地址初始分配 CCC 数量为 20010，其中 20001 将用于委托，剩余留作备用手续费
 
 4. 生成 genesis 文件及节点配置文件
 
@@ -157,9 +161,6 @@
 
    ```shell
    scp -r ./.local/bsc/node0 val-node-1:
-   scp -r ./.local/bsc/node1 val-node-2:
-   scp -r ./.local/bsc/node2 val-node-3:
-   scp -r ./.local/bsc/node3 val-node-4:
    ```
 
 6. 启动验证节点
@@ -213,7 +214,7 @@
    
    下面是一个一个给验证人注册信息，这里可以根据需要修改每一位验证人的委托amount、moniker、identity、website、details信息。
    
-   * amount 的单位已经成包含了18位的精度，例如：20001表示20001个HEC
+   * amount 的单位已经成包含了18位的精度，例如：20001表示20001个CCC
    * moniker 必须设置，长度在 3-9 之间，第一个字符必须大写，只能包含字母、数字
    * identity 可以为空
    * website 可以为空，建议设置
