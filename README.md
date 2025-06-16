@@ -69,6 +69,8 @@
    `debug/300` 分支表示出块时间间隔为 300ms
    `debug/500` 分支表示出块时间间隔为 500ms
 
+   不同的出快时间需要编译geth在不同的分支，切换分支后需要重新编译geth，默认使用 `debug/300` 分支，出块时间间隔为 300ms。
+
    ```shell
    git clone https://github.com/web3debug/bsc.git 
    (cd bsc && git checkout debug/300 && make all)
