@@ -237,9 +237,9 @@
      --vote-key-dir ./keys/bls0 \
      --password-path ./keys/password.txt \
      --amount 20001 \
-     --validator-moniker "Moniker1" \
+     --validator-moniker "Validator001" \
      --validator-identity "" \
-     --validator-website "https://privatex.io" \
+     --validator-website "https://consciousnesschain.com" \
      --validator-details "first validator" \
      --rpc-url ${RPC_URL}
    ```
