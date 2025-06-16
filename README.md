@@ -315,11 +315,20 @@ metrics 监控默认以开启，可以使用 prometheus 收集节点服务器的
 
 > 在 `ecs-c2ea-xnode` 服务器上，服务器上的环境已经全部安装完成
 
-* 获取最新代码
+* 克隆部署仓库
 
 ```shell
+git clone https://github.com/web3debug/node-deploy.git
 cd node-deploy
-git pull
+git checkout ccc
+```
+
+* 将编译的 geth、bootnode 二进制拷贝到当前项目
+
+```shell
+cp ../bsc/build/bin/geth ./bin/
+cp ../bsc/build/bin/bootnode ./bin/
+./bin/geth version
 ```
 
 * 清理历史数据
