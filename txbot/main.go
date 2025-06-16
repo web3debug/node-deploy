@@ -26,7 +26,7 @@ func main() {
 		toAddr = common.HexToAddress(toAddrEnv)
 	}
 	c, _ := ethclient.Dial(edpoint)
-	t := time.NewTicker(200 * time.Millisecond)
+	t := time.NewTicker(50 * time.Millisecond)
 	for {
 		select {
 		case <-t.C:

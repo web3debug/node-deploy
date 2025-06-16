@@ -11,7 +11,7 @@ source ${workspace}/.env
 GENESIS_COMMIT=$(grep '\-\-hard' Makefile | awk '{print $7}')
 INIT_HOLDER=$PROTECTOR
 size=${VALIDATOR_SIZE:-1}
-blockInterval=${BLOCK_INTERVAL:-"1 seconds"}
+blockInterval="1 seconds"
 sleepBeforeStart=5
 
 geth_version=$(${workspace}/bin/geth version | head -n 2 | tail -n 1 | awk '{print $2}')
@@ -104,7 +104,7 @@ function prepare_config() {
     poetry run python -m scripts.generate generate-validators
     poetry run python -m scripts.generate generate-init-holders "${validators}" "${INIT_HOLDERS}" "${INIT_AMOUNT}"
     poetry run python -m scripts.generate custom \
-        --dev-chain-id ${CHAIN_ID} \
+        --custom-chain-id ${CHAIN_ID} \
         --block-interval "${blockInterval}" \
         --stake-hub-protector "${INIT_HOLDER}" \
         --governor-protector "${INIT_HOLDER}" \
