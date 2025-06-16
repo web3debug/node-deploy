@@ -8,7 +8,7 @@
    * CPU: 4核8G
    * 系统盘(SSD): 20G
 
-### 创建验证节点服务器（4台）
+### 创建验证节点服务器（1台）
 
    ⚠️验证节点上有验证人私钥，节点出快时需要用到私钥签名，所以私钥是解锁状态，如果公开rpc（8545、8546端口），可能导致验证人资产损失，[官方也不推荐公开RPC](https://docs.bnbchain.org/bnb-smart-chain/validator/run-val/#3-start-validator-node)，
    所以，如果需要提供RPC服务，可以单独创建一个（不够了再加）full node节点，用于提供RPC服务，这样可以保证验证人私钥安全。
@@ -181,45 +181,6 @@
    
    ![start_node.png](start_node.png)
    
-   * 启动第二台验证人节点
-
-   ```shell
-   ssh val-node-2
-   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
-   mv /root/node1/* /root/.ethereum/ && rm -rf /root/node1
-   mv /root/.ethereum/geth1 /usr/local/bin/geth
-   mv /root/.ethereum/hardwood.service /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable hardwood
-   sudo systemctl start hardwood
-   ```
-
-   * 启动第三台验证人节点
-
-   ```shell
-   ssh val-node-3
-   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
-   mv /root/node2/* /root/.ethereum/ && rm -rf /root/node2
-   mv /root/.ethereum/geth2 /usr/local/bin/geth
-   mv /root/.ethereum/hardwood.service /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable hardwood
-   sudo systemctl start hardwood
-   ```
-
-   * 启动第四台验证人节点
-
-   ```shell
-   ssh val-node-4
-   rm -rf /root/.ethereum/* # .ethereum 为挂载目录，如果存在，删除文件夹内所有数据
-   mv /root/node3/* /root/.ethereum/ && rm -rf /root/node3
-   mv /root/.ethereum/geth3 /usr/local/bin/geth
-   mv /root/.ethereum/hardwood.service /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable hardwood
-   sudo systemctl start hardwood
-   ```
-   
    * 查看节点运行日志
    
    ```shell
@@ -282,59 +243,10 @@
      --validator-details "first validator" \
      --rpc-url ${RPC_URL}
    ```
-   
-   * 给第二个验证人注册信息
-   
-   ```shell
-   go run ./main.go \
-     --consensus-key-dir ./keys/validator1 \
-     --vote-key-dir ./keys/bls1 \
-     --password-path ./keys/password.txt \
-     --amount 20001 \
-     --validator-moniker "Moniker2" \
-     --validator-identity "" \
-     --validator-website "https://privatex.io" \
-     --validator-details "second validator" \
-     --rpc-url ${RPC_URL}
-   ```
-   
-   * 给第三个验证人注册信息
-   
-   ```shell
-   go run ./main.go \
-     --consensus-key-dir ./keys/validator2 \
-     --vote-key-dir ./keys/bls2 \
-     --password-path ./keys/password.txt \
-     --amount 20001 \
-     --validator-moniker "Moniker3" \
-     --validator-identity "" \
-     --validator-website "https://privatex.io" \
-     --validator-details "third validator" \
-     --rpc-url ${RPC_URL}
-   ```
 
-   * 给第四个验证人注册信息
+## 部署 archive/full node 节点
 
-   ```shell
-   go run ./main.go \
-     --consensus-key-dir ./keys/validator3 \
-     --vote-key-dir ./keys/bls3 \
-     --password-path ./keys/password.txt \
-     --amount 20001 \
-     --validator-moniker "Moniker4" \
-     --validator-identity "" \
-     --validator-website "https://privatex.io" \
-     --validator-details "fourth validator" \
-     --rpc-url ${RPC_URL}
-   ```   
-
-   * 如果还有更多验证人，将 `--consensus-key-dir` 和 `--vote-key-dir` 修改为对应的目录，然后执行上面的命令
-
-8. 验证人节点创建完成
-
-## 部署 archive node 节点
-
-### 创建archive node 或 full node节点服务器（1台）
+### 创建archive node 或 full node节点服务器
 
 > 下面将以部署 archive 节点举例，提供给浏览器使用，根据需要可以部署多个 archive 或 full 节点
 
@@ -413,7 +325,7 @@ git pull
 make clear
 ```
 
-* 重置节点，默认部署4个节点，如果需要自定，可以修改 `.env` 文件
+* 重置节点，默认部署1个节点，如果需要自定，可以修改 `.env` 文件
 
 ```shell
 make reset
