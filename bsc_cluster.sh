@@ -15,9 +15,9 @@ blockInterval=${BLOCK_INTERVAL:-"1 seconds"}
 sleepBeforeStart=5
 
 geth_version=$(${workspace}/bin/geth version | head -n 2 | tail -n 1 | awk '{print $2}')
-if [ $geth_version != "1.5.7" ]; then
-    echo "geth version must be 1.5.7" && exit 1
-fi
+#if [ $geth_version != "1.5.7" ]; then
+#    echo "geth version must be 1.5.7" && exit 1
+#fi
 
 # stop geth client
 function exit_previous() {
@@ -103,9 +103,8 @@ function prepare_config() {
 
     poetry run python -m scripts.generate generate-validators
     poetry run python -m scripts.generate generate-init-holders "${validators}" "${INIT_HOLDERS}" "${INIT_AMOUNT}"
-    poetry run python -m scripts.generate dev \
+    poetry run python -m scripts.generate custom \
         --dev-chain-id ${CHAIN_ID} \
-        --epoch 200 \
         --block-interval "${blockInterval}" \
         --stake-hub-protector "${INIT_HOLDER}" \
         --governor-protector "${INIT_HOLDER}" \

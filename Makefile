@@ -7,7 +7,7 @@ clear:
 	rm -rf ./.local ./genesis ./keys && mkdir ./genesis
 	git submodule update --init --recursive
 	git submodule update --remote --recursive
-	cd genesis && git reset --hard 70c6c5a5c8d7a06f968a7635d54687c4311c76e0
+	cd genesis && git reset --hard 64b0efdd66afeaa34591d5483c4b8b9979f7b8f7
 
 reset:
 	bash -x ./bsc_cluster.sh reset

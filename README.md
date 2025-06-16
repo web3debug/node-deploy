@@ -54,24 +54,13 @@
    foundryup
    forge --version
    ```
-5. 安装 pipx
+5. 安装 poetry
 
-   > ⚠️可能需要在 `~/.bashrc` 文件中添加 PATH 配置，注意观察安装输出内容提示
-
-   ```shell
-   sudo apt update
-   sudo apt install pipx
-   pipx ensurepath
-   pipx --version
-   ```
-   
-6. 安装 poetry
-
-   > ⚠️可能需要在 `~/.bashrc` 文件中添加 PATH 配置，注意观察安装输出内容提示   
+   > ⚠️可能需要在 `~/.bashrc` 文件中添加 PATH 配置，注意观察安装输出内容提示，python3 版本需要 3.9 以上
 
    ```shell
-   pipx install poetry
-   poetry --version # Should print "Poetry 2.1.1".
+   curl -sSL https://install.python-poetry.org | python3 -
+   poetry --version # Should print "Poetry 2.1".
    ```
 
 ## 编译 geth
@@ -88,20 +77,10 @@
    ```shell
    git clone https://github.com/web3debug/node-deploy.git
    cd node-deploy
-   git checkout fork/main
+   git checkout ccc
    ```
 
-2. 安装依赖
-
-   ```shell
-   sudo apt-get update
-   sudo apt-get install python3.12-venv
-   python3 -m venv venv
-   source venv/bin/activate
-   pip3 install -r requirements.txt
-   ```
-
-3. 将编译的 geth、bootnode 二进制拷贝到当前项目
+2. 将编译的 geth、bootnode 二进制拷贝到当前项目
 
    ```shell
    cp ../bsc/build/bin/geth ./bin/
@@ -109,7 +88,7 @@
    ./bin/geth version
    ```
 
-4. 修改 .env 文件
+3. 修改 .env 文件
 
    可修改变量，如果重新部署，从这里开始，不需要重新执行上面的步骤：
    
@@ -123,7 +102,7 @@
    
    > 说明：验证人地址初始分配 HEC 数量为 20010，其中 20001 将用于委托，剩余留作备用手续费
 
-5. 生成 genesis 文件及节点配置文件
+4. 生成 genesis 文件及节点配置文件
 
    * 如果是重新部署，清理旧数据
    ```shell
@@ -154,7 +133,7 @@
    ```
    也可以通过修改服务器安全组
 
-6. 将节点配置文件拷贝到对应的节点服务器上
+5. 将节点配置文件拷贝到对应的节点服务器上
 
    * 检查配置文件是否生成成功
    ```shell
@@ -183,7 +162,7 @@
    scp -r ./.local/bsc/node3 val-node-4:
    ```
 
-7. 启动验证节点
+6. 启动验证节点
 
    节点启动使用 systemd 管理，服务器重启后会自动启动节点
 
@@ -269,7 +248,7 @@
    sudo systemctl restart hardwood
    ```
 
-8. 注册验证人信息
+7. 注册验证人信息
    
    下面是一个一个给验证人注册信息，这里可以根据需要修改每一位验证人的委托amount、moniker、identity、website、details信息。
    
@@ -351,7 +330,7 @@
 
    * 如果还有更多验证人，将 `--consensus-key-dir` 和 `--vote-key-dir` 修改为对应的目录，然后执行上面的命令
 
-9. 验证人节点创建完成
+8. 验证人节点创建完成
 
 ## 部署 archive node 节点
 
