@@ -12,7 +12,7 @@ GENESIS_COMMIT=$(grep '\-\-hard' Makefile | awk '{print $7}')
 INIT_HOLDER=$PROTECTOR
 size=${VALIDATOR_SIZE:-1}
 blockInterval="1 seconds"
-sleepBeforeStart=5
+sleepBeforeStart=2
 
 geth_version=$(${workspace}/bin/geth version | head -n 2 | tail -n 1 | awk '{print $2}')
 #if [ $geth_version != "1.5.7" ]; then
